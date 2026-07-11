@@ -1,4 +1,3 @@
+json
 composers.json
-yfinance
-pandas
-plotly
+
