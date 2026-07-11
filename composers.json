@@ -109,7 +109,11 @@
         ]
 
       }
-  "Baroque": {
+
+    ]
+
+  },
+    "Baroque": {
 
     "years": "1600-1750",
 
@@ -310,7 +314,7 @@
     ]
 
   },
-        "Romantic": {
+    "Romantic": {
 
     "years": "1820-1900",
 
@@ -533,7 +537,7 @@
     ]
 
   },
-        "Impressionist and 20th Century": {
+    "Impressionist and 20th Century": {
 
     "years": "1890-2000",
 
@@ -756,7 +760,7 @@
     ]
 
   },
-        "Modern": {
+    "Modern": {
 
     "years": "1950-present",
 
@@ -942,6 +946,3 @@
   }
 
 }
-    ]
-
-  },
