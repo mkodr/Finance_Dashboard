@@ -1,10 +1,11 @@
 import streamlit as st
 import urllib.parse
+import streamlit.components.v1 as components
 
 
-# ----------------------------------------------------
+# =====================================================
 # PAGE CONFIG
-# ----------------------------------------------------
+# =====================================================
 
 st.set_page_config(
     page_title="Classical Music Explorer",
@@ -13,301 +14,355 @@ st.set_page_config(
 )
 
 
-# ----------------------------------------------------
+# =====================================================
 # CUSTOM CSS
-# ----------------------------------------------------
+# =====================================================
 
 st.markdown("""
 <style>
 
-body {
-    background-color:#0e1117;
+html, body, [class*="css"] {
+    font-family: 'Segoe UI', sans-serif;
 }
 
-.main {
-    background-color:#0e1117;
+
+.stApp {
+    background:#0b0f14;
+    color:white;
 }
+
 
 h1 {
-    color:#f5d76e;
-    font-size:45px;
+    color:#f4d35e;
+    font-size:48px;
 }
+
 
 h2 {
-    color:#f5d76e;
+    color:#f4d35e;
 }
 
-h3 {
-    color:#d8d8d8;
-}
-
-.sidebar .sidebar-content {
-    background-color:#111827;
-}
-
-div[data-testid="stDataFrame"] {
-    border-radius:15px;
-}
-
-.stButton button {
-    border-radius:20px;
-    background:#f5d76e;
-    color:black;
-    font-weight:bold;
-}
 
 .card {
-    background:#161b22;
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:15px;
-    border:1px solid #30363d;
+
+background:
+linear-gradient(
+135deg,
+#151b25,
+#10151d
+);
+
+padding:25px;
+
+border-radius:20px;
+
+border:
+1px solid #273142;
+
+margin-bottom:20px;
+
 }
 
-.small {
-    color:#bbbbbb;
-    font-size:14px;
+
+.title {
+
+font-size:30px;
+
+font-weight:bold;
+
+color:#f4d35e;
+
 }
+
+
+.subtitle {
+
+color:#aaaaaa;
+
+font-size:15px;
+
+}
+
+
+.song {
+
+background:#1c2533;
+
+padding:12px;
+
+border-radius:12px;
+
+margin-top:10px;
+
+}
+
+
+a {
+
+color:#f4d35e;
+
+text-decoration:none;
+
+font-weight:bold;
+
+}
+
 
 </style>
-""", unsafe_allow_html=True)
+""",
+unsafe_allow_html=True)
 
 
-# ----------------------------------------------------
-# DATA
-# ----------------------------------------------------
+
+# =====================================================
+# MUSIC DATABASE
+# =====================================================
+
 
 music = {
 
-"Medieval": {
 
-"years":"500 - 1400",
+"Baroque": [
 
-"description":
-"Music of the Middle Ages focused heavily on sacred traditions, Gregorian chant, and the development of early notation systems.",
+{
+"name":"Johann Sebastian Bach",
 
-"composers":[
+"style":"Counterpoint / Organ / Orchestra",
 
-["Hildegard von Bingen",
-"Medieval Sacred",
-"German abbess and composer known for visionary chants.",
-"Ordo Virtutum"],
+"about":
+"German master of harmony and counterpoint. His works represent the peak of Baroque musical architecture.",
 
-["Guillaume de Machaut",
-"Ars Nova",
-"Important French composer who expanded rhythmic complexity.",
-"Messe de Nostre Dame"],
+"songs":[
 
-["Léonin",
-"Early Polyphony",
-"One of the first known composers of multi-part music.",
-"Viderunt Omnes"]
+("Brandenburg Concerto No. 3",
+"https://www.youtube.com/watch?v=hZ9qWpa2rIg"),
+
+("Cello Suite No.1",
+"https://www.youtube.com/watch?v=1prweT95Mo0"),
+
+("Toccata and Fugue",
+"https://www.youtube.com/watch?v=ho9rZjlsyYY")
 
 ]
 
 },
 
 
-"Renaissance": {
+{
+"name":"Antonio Vivaldi",
 
-"years":"1400 - 1600",
+"style":"Violin Concerto",
 
-"description":
-"Renaissance music emphasized balance, vocal harmony, and expressive polyphony.",
+"about":
+"Venetian composer famous for energetic concertos and especially The Four Seasons.",
 
-"composers":[
+"songs":[
 
-["Josquin des Prez",
-"Renaissance Polyphony",
-"Master of vocal counterpoint and influential composer.",
-"Ave Maria"],
+("Spring - Four Seasons",
+"https://www.youtube.com/watch?v=mFWQgxXM_b8"),
 
-["Giovanni Pierluigi da Palestrina",
-"Sacred Choral",
-"Famous for elegant church compositions.",
-"Missa Papae Marcelli"],
-
-["Thomas Tallis",
-"English Renaissance",
-"Known for rich and dramatic sacred music.",
-"Spem in Alium"]
-
-]
-
-},
-
-
-"Baroque": {
-
-"years":"1600 - 1750",
-
-"description":
-"The Baroque era introduced opera, concerto form, and elaborate musical expression.",
-
-"composers":[
-
-["Johann Sebastian Bach",
-"Counterpoint / Organ / Orchestra",
-"One of history's greatest composers, famous for mathematical precision.",
-"Brandenburg Concertos"],
-
-["George Frideric Handel",
-"Opera / Oratorio",
-"Known worldwide for Messiah and dramatic works.",
-"Messiah"],
-
-["Antonio Vivaldi",
-"Violin Concerto",
-"Created The Four Seasons and influenced concerto writing.",
-"The Four Seasons"]
-
-]
-
-},
-
-
-"Classical": {
-
-"years":"1750 - 1820",
-
-"description":
-"Classical music emphasized clarity, structure, balance, and elegant melodies.",
-
-"composers":[
-
-["Wolfgang Amadeus Mozart",
-"Symphony / Opera",
-"Child prodigy who created some of the world's most beloved music.",
-"Eine kleine Nachtmusik"],
-
-["Joseph Haydn",
-"Symphony / String Quartet",
-"Father of the symphony and string quartet.",
-"Surprise Symphony"],
-
-["Ludwig van Beethoven",
-"Symphony / Piano",
-"Bridge between Classical and Romantic periods.",
-"Symphony No. 9"]
-
-]
-
-},
-
-
-"Romantic": {
-
-"years":"1820 - 1900",
-
-"description":
-"Romantic composers focused on emotion, individuality, larger orchestras, and dramatic storytelling.",
-
-"composers":[
-
-["Frédéric Chopin",
-"Piano Romanticism",
-"Poet of the piano known for expressive works.",
-"Nocturnes"],
-
-["Johannes Brahms",
-"Symphonic Romantic",
-"Combined classical structure with romantic emotion.",
-"Symphony No. 4"],
-
-["Pyotr Tchaikovsky",
-"Orchestra / Ballet",
-"Famous for emotional melodies and ballet masterpieces.",
-"Swan Lake"]
-
-]
-
-},
-
-
-"Impressionist / Modern": {
-
-"years":"1900 - Present",
-
-"description":
-"Modern composers explored new harmonies, unusual structures, and experimental sounds.",
-
-"composers":[
-
-["Claude Debussy",
-"Impressionism",
-"Created atmospheric music using new harmonic colors.",
-"Clair de Lune"],
-
-["Igor Stravinsky",
-"Modernism",
-"Revolutionized rhythm and orchestral writing.",
-"The Rite of Spring"],
-
-["Dmitri Shostakovich",
-"20th Century Symphony",
-"Known for powerful symphonies and emotional depth.",
-"Symphony No. 5"]
+("Summer - Four Seasons",
+"https://www.youtube.com/watch?v=Z21_VpN8v2I")
 
 ]
 
 }
 
+
+],
+
+
+
+"Classical":[
+
+
+{
+"name":"Wolfgang Amadeus Mozart",
+
+"style":"Symphony / Opera / Chamber",
+
+"about":
+"A child prodigy who created some of the most recognizable melodies in history.",
+
+"songs":[
+
+("Eine kleine Nachtmusik",
+"https://www.youtube.com/watch?v=oy2zDJPIgwc"),
+
+("Symphony No.40",
+"https://www.youtube.com/watch?v=JTc1mDieQI8"),
+
+("The Magic Flute",
+"https://www.youtube.com/watch?v=YuBeBjqKSGQ")
+
+]
+
+},
+
+
+{
+"name":"Joseph Haydn",
+
+"style":"Symphony / String Quartet",
+
+"about":
+"Known as the father of the symphony and string quartet.",
+
+"songs":[
+
+("Surprise Symphony",
+"https://www.youtube.com/watch?v=tF5kr251BRs")
+
+]
+
+}
+
+
+],
+
+
+
+"Romantic":[
+
+
+{
+"name":"Ludwig van Beethoven",
+
+"style":"Symphony / Piano",
+
+"about":
+"The revolutionary composer who transformed Classical music into Romantic expression.",
+
+"songs":[
+
+("Symphony No.5",
+"https://www.youtube.com/watch?v=fOk8Tm815lE"),
+
+("Moonlight Sonata",
+"https://www.youtube.com/watch?v=4Tr0otuiQuU"),
+
+("Symphony No.9",
+"https://www.youtube.com/watch?v=t3217H8JppI")
+
+]
+
+},
+
+
+
+{
+"name":"Pyotr Tchaikovsky",
+
+"style":"Orchestra / Ballet",
+
+"about":
+"Russian Romantic composer famous for dramatic melodies and ballet masterpieces.",
+
+"songs":[
+
+("Swan Lake",
+"https://www.youtube.com/watch?v=9cNQFB0TDfY"),
+
+("1812 Overture",
+"https://www.youtube.com/watch?v=VbxgYlcNxE8")
+
+]
+
+}
+
+],
+
+
+
+"Impressionist / Modern":[
+
+
+{
+"name":"Claude Debussy",
+
+"style":"Impressionism",
+
+"about":
+"Created atmospheric music using new harmonies and unusual tonal colors.",
+
+"songs":[
+
+("Clair de Lune",
+"https://www.youtube.com/watch?v=CvFH_6DNRCY")
+
+]
+
+},
+
+
+
+{
+"name":"Igor Stravinsky",
+
+"style":"Modernism",
+
+"about":
+"Changed 20th century music with revolutionary rhythm and orchestration.",
+
+"songs":[
+
+("The Rite of Spring",
+"https://www.youtube.com/watch?v=EkwqPJZe8ms")
+
+]
+
+}
+
+]
+
+
 }
 
 
 
-# ----------------------------------------------------
+# =====================================================
 # SIDEBAR
-# ----------------------------------------------------
+# =====================================================
+
 
 st.sidebar.title("🎼 Music Library")
 
-st.sidebar.write(
-"""
-Explore the major periods of Western classical music.
-
-Select an era:
-"""
-)
-
-
 era = st.sidebar.radio(
-    "Choose Period",
+    "Choose an Era",
     list(music.keys())
 )
 
 
 st.sidebar.markdown("---")
 
-st.sidebar.info(
+st.sidebar.write(
 """
-Tip:
-Click the YouTube links to hear examples of each composer's style.
+Explore famous composers,
+listen to masterpieces,
+and discover musical history.
 """
 )
 
 
-# ----------------------------------------------------
-# MAIN DISPLAY
-# ----------------------------------------------------
 
-info = music[era]
+# =====================================================
+# HEADER
+# =====================================================
 
 
 st.title("🎼 Classical Music Explorer")
-
-st.subheader(
-f"{era} Period ({info['years']})"
-)
-
 
 st.markdown(
 f"""
 <div class="card">
 
-<h3>About this Era</h3>
+<div class="title">
+{era} Era
+</div>
 
-<p>{info['description']}</p>
+<div class="subtitle">
+Explore composers and listen to their greatest works.
+</div>
 
 </div>
 """,
@@ -316,90 +371,106 @@ unsafe_allow_html=True
 
 
 
-# ----------------------------------------------------
-# TABLE
-# ----------------------------------------------------
-
-st.subheader("Famous Composers")
+# =====================================================
+# COMPOSER DISPLAY
+# =====================================================
 
 
-table = []
-
-for c in info["composers"]:
-
-    table.append(
-        {
-        "Composer":c[0],
-        "Style":c[1],
-        "Notes":c[2],
-        "Famous Work":c[3]
-        }
-    )
-
-
-st.table(table)
-
-
-
-# ----------------------------------------------------
-# YOUTUBE LINKS
-# ----------------------------------------------------
-
-st.subheader("🎧 Listen")
-
-
-for composer in info["composers"]:
-
-    name = composer[0]
-    piece = composer[3]
-
-
-    query = urllib.parse.quote(
-        f"{name} {piece} classical music"
-    )
-
-
-    youtube = (
-        "https://www.youtube.com/results?search_query="
-        + query
-    )
+for composer in music[era]:
 
 
     st.markdown(
-        f"""
-        <div class="card">
+    f"""
+    <div class="card">
 
-        <h3>{name}</h3>
+    <div class="title">
+    {composer['name']}
+    </div>
 
-        <p>
-        Recommended piece:
-        <b>{piece}</b>
-        </p>
+    <p>
+    <b>Style:</b>
+    {composer['style']}
+    </p>
 
-        <a href="{youtube}" target="_blank">
-        ▶ Search YouTube
-        </a>
+    <p>
+    {composer['about']}
+    </p>
 
-        </div>
-        """,
-        unsafe_allow_html=True
+    </div>
+
+    """,
+    unsafe_allow_html=True
     )
 
 
+    # SONG SELECTOR
 
-# ----------------------------------------------------
+    songs = {}
+
+    for title,url in composer["songs"]:
+        songs[title]=url
+
+
+
+    selected = st.selectbox(
+        f"🎧 Choose a {composer['name']} piece",
+        list(songs.keys())
+    )
+
+
+    video_url = songs[selected]
+
+
+
+    # Extract YouTube ID
+
+    video_id = video_url.split("v=")[-1]
+
+
+
+    # Custom YouTube Embed
+
+    html = f"""
+
+    <iframe
+
+    width="100%"
+
+    height="400"
+
+    src="https://www.youtube.com/embed/{video_id}"
+
+    frameborder="0"
+
+    allow="autoplay; encrypted-media"
+
+    allowfullscreen>
+
+    </iframe>
+
+    """
+
+
+
+    components.html(
+        html,
+        height=420
+    )
+
+
+    st.markdown("---")
+
+
+
+# =====================================================
 # FOOTER
-# ----------------------------------------------------
-
-st.markdown("---")
+# =====================================================
 
 st.markdown(
 """
 <center>
 
-🎻 Classical Music Explorer  
-<br>
-Built entirely with Python + Streamlit
+🎻 Built with Python + Streamlit
 
 </center>
 """,
