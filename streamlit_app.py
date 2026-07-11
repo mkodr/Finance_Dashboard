@@ -1,10 +1,12 @@
 import streamlit as st
-import urllib.parse
 import streamlit.components.v1 as components
+import json
+import os
+import random
 
 
 # =====================================================
-# PAGE CONFIG
+# PAGE SETTINGS
 # =====================================================
 
 st.set_page_config(
@@ -14,309 +16,161 @@ st.set_page_config(
 )
 
 
+
 # =====================================================
-# CUSTOM CSS
+# LOAD DATABASE
+# =====================================================
+
+@st.cache_data
+def load_music():
+
+    with open(
+        "composers.json",
+        "r",
+        encoding="utf-8"
+    ) as file:
+
+        return json.load(file)
+
+
+
+music = load_music()
+
+
+
+# =====================================================
+# SESSION STATE
+# =====================================================
+
+if "favorites" not in st.session_state:
+
+    st.session_state.favorites = []
+
+
+
+# =====================================================
+# CSS DESIGN
 # =====================================================
 
 st.markdown("""
-<style>
 
-html, body, [class*="css"] {
-    font-family: 'Segoe UI', sans-serif;
-}
+<style>
 
 
 .stApp {
-    background:#0b0f14;
-    color:white;
-}
-
-
-h1 {
-    color:#f4d35e;
-    font-size:48px;
-}
-
-
-h2 {
-    color:#f4d35e;
-}
-
-
-.card {
 
 background:
 linear-gradient(
 135deg,
-#151b25,
-#10151d
+#090d12,
+#111827
 );
-
-padding:25px;
-
-border-radius:20px;
-
-border:
-1px solid #273142;
-
-margin-bottom:20px;
 
 }
 
 
-.title {
 
-font-size:30px;
+h1 {
 
-font-weight:bold;
+color:#f4d35e;
+
+font-size:50px;
+
+}
+
+
+
+h2 {
 
 color:#f4d35e;
 
 }
 
 
-.subtitle {
 
-color:#aaaaaa;
+.card {
+
+
+background:
+
+linear-gradient(
+145deg,
+#161b22,
+#10151c
+);
+
+
+border-radius:20px;
+
+padding:25px;
+
+border:
+
+1px solid #30363d;
+
+
+margin-bottom:25px;
+
+
+}
+
+
+
+.composer-name {
+
+
+font-size:32px;
+
+font-weight:bold;
+
+color:#f4d35e;
+
+
+}
+
+
+
+.tag {
+
+
+background:#273142;
+
+padding:6px 12px;
+
+border-radius:20px;
+
+font-size:13px;
+
+}
+
+
+
+.info {
+
+
+color:#bbbbbb;
 
 font-size:15px;
 
 }
 
 
-.song {
 
-background:#1c2533;
+button {
 
-padding:12px;
 
-border-radius:12px;
+border-radius:20px!important;
 
-margin-top:10px;
 
 }
 
-
-a {
-
-color:#f4d35e;
-
-text-decoration:none;
-
-font-weight:bold;
-
-}
 
 
 </style>
+
 """,
 unsafe_allow_html=True)
 
-
-
-# =====================================================
-# MUSIC DATABASE
-# =====================================================
-
-
-music = {
-
-
-"Baroque": [
-
-{
-"name":"Johann Sebastian Bach",
-
-"style":"Counterpoint / Organ / Orchestra",
-
-"about":
-"German master of harmony and counterpoint. His works represent the peak of Baroque musical architecture.",
-
-"songs":[
-
-("Brandenburg Concerto No. 3",
-"https://www.youtube.com/watch?v=hZ9qWpa2rIg"),
-
-("Cello Suite No.1",
-"https://www.youtube.com/watch?v=1prweT95Mo0"),
-
-("Toccata and Fugue",
-"https://www.youtube.com/watch?v=ho9rZjlsyYY")
-
-]
-
-},
-
-
-{
-"name":"Antonio Vivaldi",
-
-"style":"Violin Concerto",
-
-"about":
-"Venetian composer famous for energetic concertos and especially The Four Seasons.",
-
-"songs":[
-
-("Spring - Four Seasons",
-"https://www.youtube.com/watch?v=mFWQgxXM_b8"),
-
-("Summer - Four Seasons",
-"https://www.youtube.com/watch?v=Z21_VpN8v2I")
-
-]
-
-}
-
-
-],
-
-
-
-"Classical":[
-
-
-{
-"name":"Wolfgang Amadeus Mozart",
-
-"style":"Symphony / Opera / Chamber",
-
-"about":
-"A child prodigy who created some of the most recognizable melodies in history.",
-
-"songs":[
-
-("Eine kleine Nachtmusik",
-"https://www.youtube.com/watch?v=oy2zDJPIgwc"),
-
-("Symphony No.40",
-"https://www.youtube.com/watch?v=JTc1mDieQI8"),
-
-("The Magic Flute",
-"https://www.youtube.com/watch?v=YuBeBjqKSGQ")
-
-]
-
-},
-
-
-{
-"name":"Joseph Haydn",
-
-"style":"Symphony / String Quartet",
-
-"about":
-"Known as the father of the symphony and string quartet.",
-
-"songs":[
-
-("Surprise Symphony",
-"https://www.youtube.com/watch?v=tF5kr251BRs")
-
-]
-
-}
-
-
-],
-
-
-
-"Romantic":[
-
-
-{
-"name":"Ludwig van Beethoven",
-
-"style":"Symphony / Piano",
-
-"about":
-"The revolutionary composer who transformed Classical music into Romantic expression.",
-
-"songs":[
-
-("Symphony No.5",
-"https://www.youtube.com/watch?v=fOk8Tm815lE"),
-
-("Moonlight Sonata",
-"https://www.youtube.com/watch?v=4Tr0otuiQuU"),
-
-("Symphony No.9",
-"https://www.youtube.com/watch?v=t3217H8JppI")
-
-]
-
-},
-
-
-
-{
-"name":"Pyotr Tchaikovsky",
-
-"style":"Orchestra / Ballet",
-
-"about":
-"Russian Romantic composer famous for dramatic melodies and ballet masterpieces.",
-
-"songs":[
-
-("Swan Lake",
-"https://www.youtube.com/watch?v=9cNQFB0TDfY"),
-
-("1812 Overture",
-"https://www.youtube.com/watch?v=VbxgYlcNxE8")
-
-]
-
-}
-
-],
-
-
-
-"Impressionist / Modern":[
-
-
-{
-"name":"Claude Debussy",
-
-"style":"Impressionism",
-
-"about":
-"Created atmospheric music using new harmonies and unusual tonal colors.",
-
-"songs":[
-
-("Clair de Lune",
-"https://www.youtube.com/watch?v=CvFH_6DNRCY")
-
-]
-
-},
-
-
-
-{
-"name":"Igor Stravinsky",
-
-"style":"Modernism",
-
-"about":
-"Changed 20th century music with revolutionary rhythm and orchestration.",
-
-"songs":[
-
-("The Rite of Spring",
-"https://www.youtube.com/watch?v=EkwqPJZe8ms")
-
-]
-
-}
-
-]
-
-
-}
 
 
 
@@ -325,23 +179,53 @@ music = {
 # =====================================================
 
 
-st.sidebar.title("🎼 Music Library")
+st.sidebar.title("🎼 Music Explorer")
 
-era = st.sidebar.radio(
-    "Choose an Era",
+
+era = st.sidebar.selectbox(
+
+    "Choose Musical Period",
+
     list(music.keys())
+
 )
+
 
 
 st.sidebar.markdown("---")
 
-st.sidebar.write(
-"""
-Explore famous composers,
-listen to masterpieces,
-and discover musical history.
-"""
+
+
+search = st.sidebar.text_input(
+
+    "🔎 Search composer"
+
 )
+
+
+
+st.sidebar.markdown("---")
+
+
+
+if st.sidebar.button("🎲 Random Composer"):
+
+
+    all_composers=[]
+
+
+    for period in music.values():
+
+        all_composers.extend(
+            period["composers"]
+        )
+
+
+    choice=random.choice(all_composers)
+
+
+    st.session_state.random = choice["name"]
+
 
 
 
@@ -350,24 +234,48 @@ and discover musical history.
 # =====================================================
 
 
-st.title("🎼 Classical Music Explorer")
+period = music[era]
+
+
+st.title(
+    "🎼 Classical Music Explorer"
+)
+
+
 
 st.markdown(
+
 f"""
+
 <div class="card">
 
-<div class="title">
-{era} Era
+
+<h2>{era}</h2>
+
+
+<p class="info">
+
+{period['years']}
+
+</p>
+
+
+<p>
+
+{period['description']}
+
+</p>
+
+
 </div>
 
-<div class="subtitle">
-Explore composers and listen to their greatest works.
-</div>
 
-</div>
 """,
+
 unsafe_allow_html=True
+
 )
+
 
 
 
@@ -376,61 +284,208 @@ unsafe_allow_html=True
 # =====================================================
 
 
-for composer in music[era]:
+for composer in period["composers"]:
 
+
+
+    name = composer["name"]
+
+
+
+    # Search filtering
+
+    if search:
+
+        if search.lower() not in name.lower():
+
+            continue
+
+
+
+    # -------------------------------------------------
 
     st.markdown(
+
     f"""
+
     <div class="card">
 
-    <div class="title">
-    {composer['name']}
+
+    <div class="composer-name">
+
+    {name}
+
     </div>
 
-    <p>
-    <b>Style:</b>
+
+    <br>
+
+
+    <span class="tag">
+
     {composer['style']}
+
+    </span>
+
+
+    <br><br>
+
+
+    <p class="info">
+
+    Born: {composer['birth']}
+
     </p>
 
+
     <p>
+
     {composer['about']}
+
     </p>
+
 
     </div>
 
     """,
+
     unsafe_allow_html=True
+
     )
 
 
-    # SONG SELECTOR
+
+    # -------------------------------------------------
+    # IMAGE SUPPORT
+    # -------------------------------------------------
+
+
+    image_path = (
+
+        "images/" +
+
+        composer["image"]
+
+    )
+
+
+
+    if os.path.exists(image_path):
+
+        st.image(
+
+            image_path,
+
+            width=250
+
+        )
+
+
+
+    else:
+
+        st.info(
+            "Add image: " + image_path
+        )
+
+
+
+
+    # -------------------------------------------------
+    # FAVORITES
+    # -------------------------------------------------
+
+
+    if st.button(
+
+        "⭐ Favorite " + name,
+
+        key="fav_"+name
+
+    ):
+
+
+        if name not in st.session_state.favorites:
+
+            st.session_state.favorites.append(name)
+
+
+
+    # -------------------------------------------------
+    # MUSIC PLAYER
+    # -------------------------------------------------
+
+
+    st.subheader(
+        "🎧 Listen"
+    )
+
+
 
     songs = {}
 
-    for title,url in composer["songs"]:
-        songs[title]=url
+
+    for song in composer["songs"]:
+
+        songs[
+            song["title"]
+        ] = song["youtube"]
 
 
 
-    selected = st.selectbox(
-        f"🎧 Choose a {composer['name']} piece",
-        list(songs.keys())
+
+    selected_song = st.selectbox(
+
+        "Choose a piece",
+
+        list(songs.keys()),
+
+        key=name
+
     )
 
 
-    video_url = songs[selected]
+
+    youtube_url = songs[selected_song]
 
 
 
-    # Extract YouTube ID
+    # Extract search URL into embed style
 
-    video_id = video_url.split("v=")[-1]
+    video_search = (
+
+        youtube_url
+
+        .replace(
+            "https://www.youtube.com/results?search_query=",
+            ""
+        )
+
+    )
+
+
+    st.markdown(
+
+    f"""
+
+    <a href="{youtube_url}" target="_blank">
+
+    ▶ Open YouTube Search:
+    {selected_song}
+
+    </a>
+
+    """,
+
+    unsafe_allow_html=True
+
+    )
 
 
 
-    # Custom YouTube Embed
+    components.html(
 
-    html = f"""
+    f"""
 
     <iframe
 
@@ -438,41 +493,50 @@ for composer in music[era]:
 
     height="400"
 
-    src="https://www.youtube.com/embed/{video_id}"
+    src="https://www.youtube.com/embed?listType=search&list={video_search}"
 
     frameborder="0"
-
-    allow="autoplay; encrypted-media"
 
     allowfullscreen>
 
     </iframe>
 
-    """
+    """,
 
+    height=420
 
-
-    components.html(
-        html,
-        height=420
     )
 
 
-    st.markdown("---")
+
+    st.divider()
+
 
 
 
 # =====================================================
-# FOOTER
+# FAVORITES PANEL
 # =====================================================
 
-st.markdown(
-"""
-<center>
 
-🎻 Built with Python + Streamlit
+st.sidebar.markdown("---")
 
-</center>
-""",
-unsafe_allow_html=True
+st.sidebar.subheader(
+    "⭐ Favorites"
 )
+
+
+if st.session_state.favorites:
+
+
+    for fav in st.session_state.favorites:
+
+        st.sidebar.write(
+            "🎵 " + fav
+        )
+
+else:
+
+    st.sidebar.write(
+        "No favorites yet"
+    )
