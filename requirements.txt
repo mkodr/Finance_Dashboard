@@ -1,5 +1,5 @@
-streamlit>=1.35
+streamlit>=1.60.0
 pandas>=2.0
-plotly>=5.20
-yfinance>=0.2.40
+plotly>=6.9.0
+yfinance>=1.5.1
 requests>=2.31
